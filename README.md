@@ -25,3 +25,5 @@ aiogram         https://docs.aiogram.dev/en/stable/
 
 dataclasses     https://habr.com/ru/articles/415829/
 sqlite3         https://habr.com/ru/articles/754400/
+                https://www.sqlite.org/doclist.html
+                https://docs.python.org/3/library/sqlite3.html
