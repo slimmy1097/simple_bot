@@ -1,21 +1,18 @@
 import logging
 import asyncio
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 
 
 from handlers import all_handlers
 from dbdb.database import init_db
-from config_.config import Config, load_config
+from config import Config, load_config
 
 
 async def main():
     logging.basicConfig(
         level=logging.INFO,
         format='[%(asctime)s] #%(levelname)-8s %(filename)-15s: %(lineno)-4s - %(message)s')
-    #    format='%(filename)-15s: %(lineno)-4s #%(levelname)-8s '
-    #           '[%(asctime)s] - %(message)s')
-    # format='%(filename)-15s: %(lineno)-5s #%(levelname)-8s '
-    #           '[%(asctime)s] - %(name)s - %(message)s')
+
     logger = logging.getLogger(__name__)
 
     logger.info('Загрузка конфига в переменную config')
@@ -25,7 +22,7 @@ async def main():
     init_db()
 
     logger.info('инициализируем бот и диспетчер')
-    bot = Bot(token=config.tg_bot.token)
+    bot = Bot(token=config.BOT_TOKEN)
     dp = Dispatcher()
 
     # регистриуем роутеры в диспетчере - на будущее в основном

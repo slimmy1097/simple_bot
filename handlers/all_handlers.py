@@ -70,7 +70,7 @@ async def process_cancel_command_state(message: Message, state: FSMContext):
     await state.clear()
 
 
-@router.message(Registration.first_name)
+@router.message(Registration.first_name, F.text.isalpha())
 async def process_first_name(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
@@ -80,7 +80,7 @@ async def process_first_name(message: types.Message, state: FSMContext):
     await state.set_state(Registration.last_name)
 
 
-@router.message(Registration.last_name)
+@router.message(Registration.last_name, F.text.isalpha())
 async def process_first_name(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}

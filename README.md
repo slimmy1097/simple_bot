@@ -21,9 +21,11 @@
 После ввода всех данных бот сохраняет их в БД.
 
 *доки, которые использовал*
-aiogram         https://docs.aiogram.dev/en/stable/ 
+- aiogram       https://docs.aiogram.dev/en/stable/ 
 
-dataclasses     https://habr.com/ru/articles/415829/
-sqlite3         https://habr.com/ru/articles/754400/
+- dataclasses   https://habr.com/ru/articles/415829/
+- sqlite3       https://habr.com/ru/articles/754400/
                 https://www.sqlite.org/doclist.html
                 https://docs.python.org/3/library/sqlite3.html
+
+- environs      https://pypi.org/project/environs/
