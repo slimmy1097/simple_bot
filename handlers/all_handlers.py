@@ -20,7 +20,6 @@ router = Router()
 # функкция проверки даты и email
 def ok_date(date_string: str) -> bool:
     try:
-        # Проверяет существование даты
         datetime.strptime(date_string, "%d.%m.%Y")
         return True
     except ValueError:
