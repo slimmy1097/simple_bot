@@ -8,12 +8,27 @@ from aiogram.fsm.state import default_state, State, StatesGroup
 
 from db.database import user_exists, add_user
 
+from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
 
 # init router in that module
 router = Router()
+
+
+# функкция проверки даты и email
+def ok_date(date_string: str) -> bool:
+    try:
+        # Проверяет существование даты
+        datetime.strptime(date_string, "%d.%m.%Y")
+        return True
+    except ValueError:
+        return False
+
+
+def ok_email(email_string: str) -> bool:
+    return True
 
 
 # all states for registration steps
@@ -43,7 +58,7 @@ async def first_enter(message: Message, state: FSMContext):
     else:
         try:
             await message.send_copy(chat_id=message.chat.id)
-            logger.info(f'отправлено Эхо пользователю {message.from_user.id}')
+            logger.info(f'Отправлено Эхо пользователю {message.from_user.id}')
         except TypeError:
             await message.reply(text='другой какой-то тип апдейтов')
 
@@ -71,8 +86,8 @@ async def cmd_start(message: Message, state: FSMContext):
         await state.update_data(first_name=message.from_user.first_name,
                                 last_name=message.from_user.last_name)
         await message.answer('Для регистрации имя и фамилия указаны в профиле.\nВведите ваш город:')
-        await state.update_data(city=message.text)
-        await state.set_state(Registration.birth_date)
+        # await state.update_data(city=message.text)
+        await state.set_state(Registration.city)
 
 
 @router.message(Registration.first_name, F.text.isalpha())
@@ -81,8 +96,16 @@ async def process_first_name(message: types.Message, state: FSMContext):
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
             заполняет first_name ''')
     await state.update_data(first_name=message.text)
-    await message.answer('Введите ваше имя:')
+    await message.answer('Введите вашу фамилию:')
     await state.set_state(Registration.last_name)
+
+
+@router.message(Registration.first_name)
+async def process_first_name(message: types.Message, state: FSMContext):
+    logger.info(
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
+            некорректно заполнил имя''')
+    await message.answer('Имя было введено некорректно. Повторите:')
 
 
 @router.message(Registration.last_name, F.text.isalpha())
@@ -91,39 +114,75 @@ async def process_last_name(message: types.Message, state: FSMContext):
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
             заполняет last_name ''')
     await state.update_data(last_name=message.text)
-    await message.answer('Введите вашу фамилию:')
+    await message.answer('Введите ваш город:')
     await state.set_state(Registration.city)
+
+
+@router.message(Registration.last_name)
+async def process_last_name(message: types.Message, state: FSMContext):
+    logger.info(
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
+            некорректно ввел фамилию''')
+    await message.answer('Фамилия была введена некорректно. Повторите:')
+
+
+# обрабытываем город
+
+@router.message(Registration.city, F.text.isalpha())
+async def process_city(message: types.Message, state: FSMContext):
+    logger.info(
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
+            заполняет city
+            стэйт: Registration.city\n''')
+    await message.answer('Введите дату рождения (например, 01.01.1990):')
+    await state.update_data(city=message.text)
+    await state.set_state(Registration.birth_date)
 
 
 @router.message(Registration.city)
 async def process_city(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            заполняет city
-            стэйт: Registration.city''')
-    await message.answer('Введите ваш город:')
-    await state.update_data(city=message.text)
-    await state.set_state(Registration.birth_date)
+            некорректно ввел город\n''')
+    await message.answer('Город введен некорректно. Повторите:')
+
+
+# обрабытываем дату рождения
+
+@router.message(Registration.birth_date, F.text.func(ok_date))
+async def process_birth_date(message: types.Message, state: FSMContext):
+    logger.info(
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
+            заполняет birth_date ''')
+    await state.update_data(birth_date=message.text)
+    await message.answer('Введите ваш email:')
+    await state.set_state(Registration.email)
 
 
 @router.message(Registration.birth_date)
 async def process_birth_date(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            заполняет birth_date ''')
-    await state.update_data(birth_date=message.text)
-    await message.answer('Введите вашу дату рождения (например, 01.01.1990):')
-    await state.set_state(Registration.email)
+            некорректно ввел дату рождения''')
+    await message.answer('Некорректно введена дата рождения. Повторите:')
+
+
+# обрабытываем дату email
+
+@router.message(Registration.email, F.text.func(ok_email))
+async def process_email(message: types.Message, state: FSMContext):
+    logger.info(
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
+            некорректно ввел email ''')
+    await message.answer('Введите ваш email:')
 
 
 @router.message(Registration.email)
 async def process_email(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            заполняет email ''')
-    await state.update_data(email=message.text)
+            некорректно ввел email ''')
     await message.answer('Введите ваш email:')
-    await state.set_state(Registration.end_update)
 
 
 @router.message(Registration.end_update)
@@ -139,9 +198,8 @@ async def process_end_update(message: Message, state: FSMContext):
     birth_date = data.get('birth_date')
 
     # добавляем пользователя в базу
-    add_user(user_id, username, first_name, last_name, city, birth_date, email)
+    await add_user(user_id, username, first_name, last_name, city, birth_date, email)
     await message.answer('Вы успешно зарегистрированы!')
-    # await state.finish()
     await state.clear()
 
 
