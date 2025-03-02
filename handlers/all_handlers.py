@@ -6,7 +6,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 
-from dbdb.database import user_exists, add_user
+from db.database import user_exists, add_user
 
 import logging
 logger = logging.getLogger(__name__)
@@ -26,17 +26,26 @@ class Registration(StatesGroup):
     end_update = State()
 
 
+@router.message(StateFilter(default_state), ~Command('start'))
+async def first_enter(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    username = message.from_user.username or ''
+
+    logger.info(f'Самый первый вход, {user_id} еще не создавался')
+    if not await user_exists(user_id):
+        await message.answer(
+            'Привет!\nДавай зарегистрируем тебя\n\nДля регистрации /start')
+
+
 @router.message(StateFilter(default_state), Command('start'))
 async def cmd_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
     username = message.from_user.username or ''
 
     logger.info('выбрана команда /start, выполняется cmd_start')
-    if user_exists(user_id):
+    if await user_exists(user_id):
         logger.info(
-            f'пользователь есть в базе {message.from_user.id} {message.from_user.username}')
-        logger.info(f'''Его first_name: {message.from_user.first_name},
-                    last_name: {message.from_user.last_name}''')
+            f'пользователь есть в базе\n{user_id=} {username=}')
         await message.send_copy(chat_id=message.chat.id)
         return
 

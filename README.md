@@ -27,5 +27,11 @@
 - sqlite3       https://habr.com/ru/articles/754400/
                 https://www.sqlite.org/doclist.html
                 https://docs.python.org/3/library/sqlite3.html
+- pip install py-asqlite3
 
 - environs      https://pypi.org/project/environs/
+
+- os.path       https://docs.python.org/3/library/os.path.html
+
+- FSM           https://mastergroosha.github.io/aiogram-3-guide/fsm/
+
