@@ -8,8 +8,6 @@ from config import load_config, logger
 
 
 DB_PATH = load_config().DB_PATH
-print(DB_PATH)
-print(os.path.exists(DB_PATH))
 
 
 async def init_db():
@@ -37,10 +35,11 @@ async def user_exists(user_id):
                               (user_id,)) as cursor:
             user = await cursor.fetchone()
         if not user:
-            logger.info(f'Не нашли пользователя {
-                        user_id} и записываем его в БД')
+            logger.info(f'''Не нашли пользователя {user_id} 
+                        \t\t\t\tи записываем его в БД''')
             await db.execute('INSERT INTO users (user_id) VALUES (?)', (user_id,))
             await db.commit()
+
     return user is not None
 
 
@@ -63,19 +62,19 @@ async def add_user(user_id, username, first_name, last_name, city, birth_date, e
     logger.info(f'Добавлен новый пользователь: {user_id}')
 
 
-# for pytest
-async def main():
-    await init_db()
+# # for pytest
+# async def main():
+#     await init_db()
 
-    user_id = 123
-    exists = await user_exists(user_id)
-    if not exists:
-        await add_user(user_id, 'test_user', 'John', 'Doe', 'New York', '2000-01-01', 'john.doe@example.com')
-        logger.info(f'Пользователь {user_id} добавлен в БД')
-    else:
-        logger.info(f'Пользователь {user_id} уже существует')
+#     user_id = 123
+#     exists = await user_exists(user_id)
+#     if not exists:
+#         await add_user(user_id, 'nickname', 'name', 'family', 'vrn', '2000-01-01', 'for@mail.com')
+#         logger.info(f'Пользователь {user_id} добавлен в БД')
+#     else:
+#         logger.info(f'Пользователь {user_id} уже существует')
 
 
-# Запуск асинхронного кода
-if __name__ == '__main__':
-    asyncio.run(main())
+# # Запуск асинхронного кода
+# if __name__ == '__main__':
+#     asyncio.run(main())
