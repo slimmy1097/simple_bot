@@ -172,8 +172,11 @@ async def process_birth_date(message: types.Message, state: FSMContext):
 async def process_email(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            некорректно ввел email ''')
-    await message.answer('Введите ваш email:')
+            ввел email ''')
+    await state.update_data(email=message.text)
+    await message.answer('Записываем данные')
+    await state.set_state(Registration.end_update)
+    await process_end_update(message, state)
 
 
 @router.message(Registration.email)
@@ -181,13 +184,12 @@ async def process_email(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
             некорректно ввел email ''')
-    await message.answer('Введите ваш email:')
+    await message.answer('Некорректно введен email:')
 
 
 @router.message(Registration.end_update)
 async def process_end_update(message: Message, state: FSMContext):
     data = await state.get_data()
-    email = message.text
 
     user_id = message.from_user.id
     username = message.from_user.username or ''
@@ -195,6 +197,7 @@ async def process_end_update(message: Message, state: FSMContext):
     last_name = data.get('last_name')
     city = data.get('city')
     birth_date = data.get('birth_date')
+    email = data.get('email')
 
     # добавляем пользователя в базу
     await add_user(user_id, username, first_name, last_name, city, birth_date, email)
