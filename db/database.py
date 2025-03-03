@@ -1,6 +1,5 @@
-import sqlite3
+
 import aiosqlite
-import logging
 import os
 import asyncio
 
@@ -62,6 +61,28 @@ async def add_user(user_id, username, first_name, last_name, city, birth_date, e
     logger.info(f'Добавлен новый пользователь: {user_id}')
 
 
+async def get_user(user_id):
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute('SELECT * FROM users WHERE user_id = ?', (user_id,)) as cursor:
+            user = await cursor.fetchone()
+    logger.info(f'Получаем данные пользователя {user_id}')
+
+    if user:
+        # user_id, username, first_name, last_name, city, birth_date, email
+        response_from_db = (f'''Информация о пользователе {user[1]}:
+                Имя: {user[2]}
+                Фамилия: {user[3]}
+                Город: {user[4]}
+                Дата рождения: {user[5]}
+                email: {user[6]}
+              ''')
+
+    else:
+        response_from_db = (f'Пользователь с ID {user_id} не найден')
+
+    return response_from_db
+
+
 # # for pytest
 # async def main():
 #     await init_db()
@@ -70,9 +91,12 @@ async def add_user(user_id, username, first_name, last_name, city, birth_date, e
 #     exists = await user_exists(user_id)
 #     if not exists:
 #         await add_user(user_id, 'nickname', 'name', 'family', 'vrn', '2000-01-01', 'for@mail.com')
-#         logger.info(f'Пользователь {user_id} добавлен в БД')
+
+#     user = await get_user(user_id)
+#     if user:
+#         print(f'Пользователь найден: {user}')
 #     else:
-#         logger.info(f'Пользователь {user_id} уже существует')
+#         print('Пользователь не найден')
 
 
 # # Запуск асинхронного кода

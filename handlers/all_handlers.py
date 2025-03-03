@@ -1,3 +1,4 @@
+import re
 
 from aiogram import Router, types, F
 from aiogram.filters import Command, StateFilter
@@ -6,31 +7,32 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 
-from db.database import user_exists, add_user
+from db.database import user_exists, add_user, get_user
 
+from config import load_config, logger
 from datetime import datetime
-import logging
-logger = logging.getLogger(__name__)
 
 
-# init router in that module
 router = Router()
+EMAIL_REGEX = load_config().EMAIL_REGEX
 
 
-# функкция проверки даты и email
+# функкции проверки даты и email
 def ok_date(date_string: str) -> bool:
     try:
-        datetime.strptime(date_string, "%d.%m.%Y")
-        return True
+        datetime.strptime(date_string, '%d.%m.%Y')
+        today = datetime.today()
+        age = (today - date_string).days // 365
+        return 5 <= age <= 120
+
     except ValueError:
         return False
 
 
 def ok_email(email_string: str) -> bool:
-    return True
+    return bool(re.match(EMAIL_REGEX, email_string))
 
 
-# all states for registration steps
 class Registration(StatesGroup):
     first_name = State()
     last_name = State()
@@ -43,6 +45,17 @@ class Registration(StatesGroup):
 # Первая часть стэйтов, которые срабатывают если пользователь в default_state
 # и если не выбрал команду старт. Пользщователь есть - отправляют эхо.
 # нет пользователя - первое приветственное сообщение, 1 раз
+
+
+# посмотреть свои статы
+
+@router.message(StateFilter(default_state), Command('selfinfo'))
+async def cmd_start(message: Message, state: FSMContext):
+    user_id = message.from_user.id
+    logger.info(f'выбрана команда /selfinfo, получение инфо о себе {user_id=}')
+    response_from_db = await get_user(user_id)
+    await message.answer(response_from_db)
+
 
 @router.message(StateFilter(default_state), ~Command('start'))
 async def first_enter(message: Message, state: FSMContext):
@@ -130,9 +143,7 @@ async def process_last_name(message: types.Message, state: FSMContext):
 @router.message(Registration.city, F.text.isalpha())
 async def process_city(message: types.Message, state: FSMContext):
     logger.info(
-        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            заполняет city
-            стэйт: Registration.city\n''')
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name} заполняет city\n''')
     await message.answer('Введите дату рождения (например, 01.01.1990):')
     await state.update_data(city=message.text)
     await state.set_state(Registration.birth_date)
@@ -171,8 +182,7 @@ async def process_birth_date(message: types.Message, state: FSMContext):
 @router.message(Registration.email, F.text.func(ok_email))
 async def process_email(message: types.Message, state: FSMContext):
     logger.info(
-        f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
-            ввел email ''')
+        f'''пользователь {message.from_user.first_name} {message.from_user.last_name} ввел email ''')
     await state.update_data(email=message.text)
     await message.answer('Записываем данные')
     await state.set_state(Registration.end_update)

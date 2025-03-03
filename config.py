@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class Config:
     BOT_TOKEN: str
     DB_PATH: str
+    EMAIL_REGEX: str
 
 
 def load_config(path: str | None = None) -> Config:
@@ -25,4 +26,5 @@ def load_config(path: str | None = None) -> Config:
 
     return Config(
         BOT_TOKEN=env('BOT_TOKEN'),
-        DB_PATH=env('DB_PATH'))
+        DB_PATH=env('DB_PATH'),
+        EMAIL_REGEX=env('EMAIL_REGEX'))
