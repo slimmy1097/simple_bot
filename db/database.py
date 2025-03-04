@@ -1,7 +1,7 @@
 
 import aiosqlite
 import os
-import asyncio
+
 
 from config import load_config, logger
 

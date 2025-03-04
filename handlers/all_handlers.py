@@ -20,11 +20,13 @@ EMAIL_REGEX = load_config().EMAIL_REGEX
 # функкции проверки даты и email
 def ok_date(date_string: str) -> bool:
     try:
-        datetime.strptime(date_string, '%d.%m.%Y')
+        birth_date = datetime.strptime(date_string, '%d.%m.%Y')
         today = datetime.today()
-        age = (today - date_string).days // 365
+        age = (today - birth_date).days // 365
+        print(f'''  Пользователь вводит {datetime.strptime(date_string, '%d.%m.%Y')}
+                    {today=}
+                    {age=}''')
         return 5 <= age <= 120
-
     except ValueError:
         return False
 
@@ -52,8 +54,9 @@ class Registration(StatesGroup):
 @router.message(StateFilter(default_state), Command('selfinfo'))
 async def cmd_start(message: Message, state: FSMContext):
     user_id = message.from_user.id
-    logger.info(f'выбрана команда /selfinfo, получение инфо о себе {user_id=}')
     response_from_db = await get_user(user_id)
+    logger.info(
+        f'выбрана команда /selfinfo, получение инфо о себе \n{user_id=}\n{response_from_db}\n')
     await message.answer(response_from_db)
 
 
@@ -62,7 +65,7 @@ async def first_enter(message: Message, state: FSMContext):
     user_id = message.from_user.id
     username = message.from_user.username or ''
 
-    logger.info(
+    logger.debug(
         f'Самый первый хэндлер default_state, реагирует на любые команды кроме /start')
     if not await user_exists(user_id):
         await message.answer(
@@ -86,7 +89,7 @@ async def cmd_start(message: Message, state: FSMContext):
     logger.info('выбрана команда /start, выполняется cmd_start')
 
     if not message.from_user.first_name or not message.from_user.last_name:
-        logger.info(
+        logger.debug(
             'у пользователя в профиле не заполнены first_name и last_name')
         await message.answer('Для регистрации в системе, введите, пожалуйста, ваше имя:')
         await state.set_state(Registration.first_name)
@@ -104,7 +107,7 @@ async def cmd_start(message: Message, state: FSMContext):
 
 @router.message(Registration.first_name, F.text.isalpha())
 async def process_first_name(message: types.Message, state: FSMContext):
-    logger.info(
+    logger.debug(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
             заполняет first_name ''')
     await state.update_data(first_name=message.text)
@@ -114,7 +117,7 @@ async def process_first_name(message: types.Message, state: FSMContext):
 
 @router.message(Registration.first_name)
 async def process_first_name(message: types.Message, state: FSMContext):
-    logger.info(
+    logger.debug(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
             некорректно заполнил имя''')
     await message.answer('Имя было введено некорректно. Повторите:')
@@ -159,7 +162,7 @@ async def process_city(message: types.Message, state: FSMContext):
 
 # обрабытываем дату рождения
 
-@router.message(Registration.birth_date, F.text.func(ok_date))
+@router.message(Registration.birth_date, lambda message: ok_date(message.text))
 async def process_birth_date(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name}
@@ -179,7 +182,7 @@ async def process_birth_date(message: types.Message, state: FSMContext):
 
 # обрабытываем дату email
 
-@router.message(Registration.email, F.text.func(ok_email))
+@router.message(Registration.email, lambda message: ok_email(message.text))
 async def process_email(message: types.Message, state: FSMContext):
     logger.info(
         f'''пользователь {message.from_user.first_name} {message.from_user.last_name} ввел email ''')

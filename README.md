@@ -35,3 +35,7 @@
 
 - FSM           https://mastergroosha.github.io/aiogram-3-guide/fsm/
 
+- tortoise      https://tortoise.github.io/#how-is-an-orm-useful
+                https://habr.com/ru/articles/829222/
+                https://pressanybutton.ru/post/tips-tricks/tortoise-orm-prostaya-asinhronnaya-alternativa-sql/
+
