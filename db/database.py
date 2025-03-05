@@ -1,7 +1,6 @@
 
-import aiosqlite
-import os
-
+from tortoise import Tortoise, fields
+from tortoise.models import Model
 
 from config import load_config, logger
 
@@ -9,96 +8,65 @@ from config import load_config, logger
 DB_PATH = load_config().DB_PATH
 
 
+class User(Model):
+    user_id = fields.IntField(pk=True)
+    username = fields.CharField(max_length=50)
+    first_name = fields.CharField(max_length=50)
+    last_name = fields.CharField(max_length=50)
+    city = fields.CharField(max_length=50)
+    birth_date = fields.CharField(max_length=10)
+    email = fields.CharField(max_length=100)
+
+    def __str__(self):
+        return f'User {self.username}'
+
+
 async def init_db():
-    if not os.path.exists(DB_PATH):
-        async with aiosqlite.connect(DB_PATH) as db:
-            await db.execute('''
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id INTEGER PRIMARY KEY,
-                    username TEXT,
-                    first_name TEXT,
-                    last_name TEXT,
-                    city TEXT,
-                    birth_date TEXT,
-                    email TEXT
-                )
-            ''')
-            await db.commit()
+    await Tortoise.init(
+        db_url=f'sqlite://{DB_PATH}',
+        modules={'models': ['db.database']}
+    )
+    await Tortoise.generate_schemas()
     logger.info('База данных создана')
 
 
 async def user_exists(user_id):
     logger.info(f'Функция user_exists вызвана с user_id = {user_id}')
-    async with aiosqlite.connect(DB_PATH) as db:
-        async with db.execute('SELECT user_id FROM users WHERE user_id = ?',
-                              (user_id,)) as cursor:
-            user = await cursor.fetchone()
-        if not user:
-            logger.info(f'''Не нашли пользователя {user_id} 
-                        \t\t\t\tи записываем его в БД''')
-            await db.execute('INSERT INTO users (user_id) VALUES (?)', (user_id,))
-            await db.commit()
-
-    return user is not None
+    return await User.filter(user_id=user_id).exists()
 
 
 async def add_user(user_id, username, first_name, last_name, city, birth_date, email):
     logger.info(f'Добавляем пользователя {user_id} в базу данных')
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute('''
-            INSERT INTO users (user_id, username, first_name, last_name, city, birth_date, email)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET 
-                username = excluded.username,
-                first_name = excluded.first_name,
-                last_name = excluded.last_name,
-                city = excluded.city,
-                birth_date = excluded.birth_date,
-                email = excluded.email
-        ''', (user_id, username, first_name, last_name, city, birth_date, email))
-
-        await db.commit()
-    logger.info(f'Добавлен новый пользователь: {user_id}')
+    user, created = await User.get_or_create(
+        user_id=user_id,
+        defaults={
+            "username": username,
+            "first_name": first_name,
+            "last_name": last_name,
+            "city": city,
+            "birth_date": birth_date,
+            "email": email
+        }
+    )
+    if not created:
+        await User.filter(user_id=user_id).update(
+            username=username, first_name=first_name,
+            last_name=last_name, city=city, birth_date=birth_date,
+            email=email
+        )
+    logger.info(f'Пользователь {user_id} добавлен/обновлён')
 
 
 async def get_user(user_id):
-    async with aiosqlite.connect(DB_PATH) as db:
-        async with db.execute('SELECT * FROM users WHERE user_id = ?', (user_id,)) as cursor:
-            user = await cursor.fetchone()
-    logger.info(f'Получаем данные пользователя {user_id}')
-
+    logger.info(f'Получаем данные пользователя {user_id=}')
+    user = await User.get_or_none(user_id=user_id)
     if user:
-        # user_id, username, first_name, last_name, city, birth_date, email
-        response_from_db = (f'''Информация о пользователе {user[1]}:
-                Имя: {user[2]}
-                Фамилия: {user[3]}
-                Город: {user[4]}
-                Дата рождения: {user[5]}
-                email: {user[6]}
-              ''')
-
+        return f'''Информация о пользователе {user.username}:
+                Имя: {user.first_name}
+                Фамилия: {user.last_name}
+                Город: {user.city}
+                Дата рождения: {user.birth_date}
+                email: {user.email}
+              '''
     else:
-        response_from_db = (f'Пользователь с ID {user_id} не найден')
-
-    return response_from_db
-
-
-# # for pytest
-# async def main():
-#     await init_db()
-
-#     user_id = 123
-#     exists = await user_exists(user_id)
-#     if not exists:
-#         await add_user(user_id, 'nickname', 'name', 'family', 'vrn', '2000-01-01', 'for@mail.com')
-
-#     user = await get_user(user_id)
-#     if user:
-#         print(f'Пользователь найден: {user}')
-#     else:
-#         print('Пользователь не найден')
-
-
-# # Запуск асинхронного кода
-# if __name__ == '__main__':
-#     asyncio.run(main())
+        return f'Пользователь с {user_id} не найден'

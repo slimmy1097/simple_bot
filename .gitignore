@@ -9,6 +9,10 @@ python.code-workspace
 db/users*
 __database_v2_test.py
 db/database_v2.py
+old_database.py
+
+
+
 
 # штуки, которые записаны при создании репозитория на github, если выбрать такой параметр:
 

@@ -7,7 +7,7 @@ from handlers import all_handlers
 # from db.database_v2 import init_db
 
 # предыдущая версия
-from db.database import init_db
+from db.old_database import init_db
 from config import Config, load_config, logger
 
 

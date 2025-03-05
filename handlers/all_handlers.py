@@ -7,7 +7,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 
-from db.database import user_exists, add_user, get_user
+from db.old_database import user_exists, add_user, get_user
 
 from config import load_config, logger
 from datetime import datetime
