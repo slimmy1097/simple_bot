@@ -21,19 +21,9 @@ class Config:
 
 def load_config(path: str | None = None) -> Config:
     env = Env()
-
-    # read .env file, if it exists
-    env.read_env(path)
+    env.read_env()      # read .env file, if it exists
 
     return Config(
         BOT_TOKEN=env('BOT_TOKEN'),
         DB_PATH=env('DB_PATH'),
         EMAIL_REGEX=env('EMAIL_REGEX'))
-
-
-# Удаляем переменную окружения, если она существует
-env_list = ('BOT_TOKEN', 'DB_PATH', 'EMAIL_REGEX',
-            'ADMIN_IDS', 'DB_HOST', 'DB_USER', 'DB_PASSWORD')
-for i in env_list:
-    if i in os.environ:
-        del os.environ[i]
