@@ -27,9 +27,9 @@
 - sqlite3       https://habr.com/ru/articles/754400/
                 https://www.sqlite.org/doclist.html
                 https://docs.python.org/3/library/sqlite3.html
-- pip install py-asqlite3
 
 - environs      https://pypi.org/project/environs/
+                https://pythonrepo.com/repo/sloria-environs
 
 - os.path       https://docs.python.org/3/library/os.path.html
 
@@ -39,3 +39,4 @@
                 https://habr.com/ru/articles/829222/
                 https://pressanybutton.ru/post/tips-tricks/tortoise-orm-prostaya-asinhronnaya-alternativa-sql/
 
+- pytest        https://docs.pytest.org/en/latest/how-to/xunit_setup.html

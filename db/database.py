@@ -9,7 +9,7 @@ DB_PATH = load_config().DB_PATH
 
 
 class User(Model):
-    user_id = fields.IntField(pk=True)
+    user_id = fields.IntField(primary_key=True)
     username = fields.CharField(max_length=50)
     first_name = fields.CharField(max_length=50)
     last_name = fields.CharField(max_length=50)
