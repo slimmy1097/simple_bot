@@ -40,3 +40,14 @@
                 https://pressanybutton.ru/post/tips-tricks/tortoise-orm-prostaya-asinhronnaya-alternativa-sql/
 
 - pytest        https://docs.pytest.org/en/latest/how-to/xunit_setup.html
+
+                для корректной работы тестов с тортами, надо конкретную версию
+                В последних версиях Tortoise-ORM могут быть проблемы с Python 3.13
+                pip install tortoise-orm==0.20.0
+
+
+- pytest-cov    https://pypi.org/project/pytest-cov/
+                https://pydev-guide.github.io/tutorial/testing/test_coverage/
+                https://pytest-cov.readthedocs.io/en/latest/readme.html
+                https://habr.com/ru/articles/448798/
+                https://habr.com/ru/articles/448782/

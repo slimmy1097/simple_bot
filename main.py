@@ -1,13 +1,8 @@
 
 import asyncio
 from aiogram import Bot, Dispatcher
-
-
 from handlers import all_handlers
-# from db.database_v2 import init_db
-
-# предыдущая версия
-from db.old_database import init_db
+from db.db_work import init_main
 from config import Config, load_config, logger
 
 
@@ -17,7 +12,7 @@ async def main():
     config: Config = load_config()
 
     logger.info('Инициализация базы данных')
-    await init_db()
+    await init_main()
 
     logger.info('инициализируем бот и диспетчер')
     bot = Bot(token=config.BOT_TOKEN)
@@ -32,7 +27,4 @@ async def main():
 
 
 if __name__ == '__main__':
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        logger.info("stop bot")
+    asyncio.run(main())

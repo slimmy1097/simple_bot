@@ -7,7 +7,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import default_state, State, StatesGroup
 
-from db.old_database import user_exists, add_user, get_user
+from db.db_work import user_exists, add_user, get_user
 
 from config import load_config, logger
 from datetime import datetime
@@ -23,9 +23,13 @@ def ok_date(date_string: str) -> bool:
         birth_date = datetime.strptime(date_string, '%d.%m.%Y')
         today = datetime.today()
         age = (today - birth_date).days // 365
-        print(f'''  Пользователь вводит {datetime.strptime(date_string, '%d.%m.%Y')}
-                    {today=}
-                    {age=}''')
+
+        # просто для логов
+        formatted_today = today.strftime('%d.%m.%Y')
+
+        logger.info(f'''Пользователь вводит {birth_date}
+                                Сегодня: {formatted_today}
+                                Возраст: {age} лет''')
         return 5 <= age <= 120
     except ValueError:
         return False
