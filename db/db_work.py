@@ -59,8 +59,8 @@ async def get_user(user_id):
     logger.info(f'Получаем данные пользователя {user_id=}')
     user = await User.filter(id=user_id).first()
     if user:
-        print('not null, okey')
-        print(user.username)
+        logger.info(
+            f'отправка пользователю {user.username=} инфо о самом себе')
         return f'''Информация о пользователе {user.username}:
                 Имя: {user.first_name}
                 Фамилия: {user.last_name}

@@ -1,3 +1,4 @@
+import logging
 import os
 import pytest
 from config import load_config, Config
@@ -17,10 +18,14 @@ def temp_env():
     os.environ.update(old_env)
 
 
-def test_load_config(temp_env):
+def test_load_config(temp_env, caplog):
     '''Тестируем загрузку конфигурации'''
+    caplog.set_level(logging.INFO)  # Устанавливаем уровень логирования
+    logging.info('          Loading configuration...')
+
     config = load_config()
 
+    logging.info(f'         Config loaded: {config}')
     assert isinstance(config, Config)
     assert config.BOT_TOKEN == 'test_bot_token'
     assert config.DB_PATH == 'test_db.sqlite'
@@ -29,7 +34,7 @@ def test_load_config(temp_env):
 
 # pytest -v -s
 # pytest --maxfail=2
-# pytest -k "config"
+# pytest -k 'config'
 # pytest --tb=short   сокращенный трэйсбэк
 # pytest --cov=config
 # pytest --cov=config
