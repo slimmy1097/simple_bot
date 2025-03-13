@@ -54,3 +54,10 @@
                 https://pytest-cov.readthedocs.io/en/latest/readme.html
                 https://habr.com/ru/articles/448798/
                 https://habr.com/ru/articles/448782/
+
+
+
+ОДИНАКОВЫЕ названия функций в хэндлерах
+конфиг переделать чтобы без функции был
+в хэндлерах прокидывать юзера
+Стэйт записывать сразу в каждом а не в конце
